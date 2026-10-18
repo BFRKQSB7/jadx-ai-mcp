@@ -100,3 +100,48 @@ stats_after = await get_cache_stats()
 ```
 
 Useful after switching APKs or after bulk decompilation requests.
+
+## 9) Kotlin metadata slimming
+
+Tools that return source strip the Kotlin compiler annotations by default:
+
+```python
+# default: @Metadata / @DebugMetadata become /*[slimmed: Kotlin metadata]*/,
+# which is 25-50% fewer bytes on a Kotlin class
+source = await get_class_source("com.example.Feature")
+
+# numbering is unchanged, so comment_line[0] is the number add_comment wants
+numbered = await get_class_source("com.example.Feature", with_line_numbers=True)
+comment_line = [line for line in numbered["response"].split("\n") if "onCreate" in line]
+
+# the untouched dump, when you want the metadata itself
+raw = await get_class_source("com.example.Feature", slim=False)
+```
+
+The line count is never altered, so a number read from the numbered dump addresses the same
+line in `add_comment(..., line=N)`. Java dumps come back unchanged, and `@Override`-style
+annotations plus `/* JADX INFO: ... */` notes are kept.
+
+## 10) Driving the server from an OpenAI-compatible model
+
+`examples/openai_compatible_client.py` connects to a running `--http` server, exposes its MCP
+tools to the model as OpenAI function tools, and runs the call → execute → feed-back loop, so
+OpenRouter / LiteLLM / vLLM / Ollama / OmniRoute clients can use the suite as well:
+
+```bash
+# terminal 1
+uv run jadx_mcp_server.py --http --host 127.0.0.1 --port 9000
+
+# the example needs the openai SDK; the server itself does not
+pip install -r examples/requirements.txt
+
+# any provider: --base-url / --api-key / --model, or the OPENAI_* env vars
+OPENAI_BASE_URL=http://127.0.0.1:11434/v1 OPENAI_API_KEY=ollama OPENAI_MODEL=llama3.1 \
+  python examples/openai_compatible_client.py --prompt "What does com.example.MainActivity do?"
+
+# print the tool schema the model would be offered, without calling a model
+python examples/openai_compatible_client.py --list-tools
+```
+
+`--max-steps` caps how many tool rounds one question may take and `--max-tool-chars`
+truncates a single result, so one large class dump cannot blow a small local model's context.

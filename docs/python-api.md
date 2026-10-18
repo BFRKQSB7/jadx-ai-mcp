@@ -19,7 +19,7 @@ Main MCP entry point:
 
 ### Current registered tool count
 
-`32` tools.
+`34` tools.
 
 ## `src/server/config.py`
 
@@ -61,6 +61,33 @@ Provides generic pagination wrapper:
 }
 ```
 
+## `src/server/slim.py`
+
+Strips Kotlin compiler metadata from decompiled source before it reaches the client:
+
+- `slim_source(code)` removes `@Metadata(...)` / `@DebugMetadata(...)` calls with a
+  string- and paren-aware scan (the payload is full of quotes, braces and descriptors like
+  `(I)V`, so a regex cannot match it), replacing each call in place with
+  `/*[slimmed: Kotlin metadata]*/`
+- `slim_payload(value, keys=("response", "content", "code"))` applies that to the plugin
+  responses the source-returning tools read, including the paginated class lists
+- If a pass would change the line count it returns the original text: `add_comment(line=N)`
+  is resolved by the plugin against the same decompiled string split on newlines, so a
+  shifted line would silently comment the wrong code
+
+Used by `get_class_source`, `fetch_current_class`, `get_method_by_name`,
+`get_main_activity_class` and `get_main_application_classes_code`, each of which exposes
+`slim: bool = True`. Java dumps are unaffected, and `@Override`-style annotations plus
+`/* JADX INFO: ... */` notes are kept.
+
+## `examples/`
+
+`examples/openai_compatible_client.py` is a reference client for any OpenAI-compatible
+`/v1/chat/completions` endpoint (OpenRouter, LiteLLM, vLLM, Ollama, OmniRoute, …): it
+converts the MCP tool list into OpenAI function tools and runs the tool-calling loop. It is
+never imported by the server, and its only extra dependency (the OpenAI SDK) lives in
+`examples/requirements.txt`.
+
 ## Tool Modules
 
 ### `src/server/tools/class_tools.py`
@@ -85,7 +112,7 @@ Class and project structure tools:
 
 Search tools:
 
-- `get_method_by_name(class_name, method_name, method_signature=None)`
+- `get_method_by_name(class_name, method_name, method_signature=None, slim=True)`
 - `search_method_by_name(method_name)`
 - `search_classes_by_keyword(search_term, package="", search_in="code", offset=0, count=20)`
 

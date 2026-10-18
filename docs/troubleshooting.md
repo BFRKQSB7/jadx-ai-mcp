@@ -34,6 +34,26 @@ Before diving deep, check these basics:
     uv run jadx_mcp_server.py --jadx-host IP_ADDRESS --jadx-port 8650
     ```
 
+### WSL: server inside WSL, JADX-GUI on Windows
+The plugin is reachable, but the default connection still fails.
+
+**Cause**: `127.0.0.1` inside WSL is WSL itself, not Windows, so the default `--jadx-host`
+never reaches the plugin. The plugin listens on every interface (`*:8650`), so the fix is to
+point the server at the Windows side:
+
+```bash
+# the Windows host address as seen from WSL (the default gateway on NAT setups)
+uv run jadx_mcp_server.py --jadx-host "$(ip route show default | awk '{print $3}')" --jadx-port 8650
+```
+
+**Notes:**
+1.  `--jadx-host` is where the *server* finds the plugin; `--host` is where *clients* find the
+    server. The two are independent.
+2.  Use the Windows machine's own IP if it is fixed; WSL2 mirrored networking removes the
+    problem entirely.
+3.  There is no environment variable for this - the host is set with `--jadx-host` /
+    `--jadx-port` at startup.
+
 ### "Port Already in Use"
 **Error**: `BindException: Address already in use`
 
