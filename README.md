@@ -364,10 +364,13 @@ https://github.com/zinja-coder/jadx-ai-mcp/releases
 unzip jadx-mcp-server-<version>.zip
 
 ├jadx-mcp-server/
-  ├── jadx_mcp.py
+  ├── jadx_mcp_server.py
   ├── requirements.txt
   ├── README.md
   ├── LICENSE
+  ├── src/
+  ├── static/
+  └── test.sh
 
 ├jadx-ai-mcp-<version>.jar
 

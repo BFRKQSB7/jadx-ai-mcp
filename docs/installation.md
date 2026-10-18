@@ -20,8 +20,8 @@ Alternative: install the release JAR from JADX GUI plugin manager.
 ## 2) Prepare MCP server
 
 ```bash
-git clone https://github.com/zinja-coder/jadx-ai-mcp.git
-cd jadx-ai-mcp/jadx-mcp-server
+git clone https://github.com/zinja-coder/jadx-mcp-server.git
+cd jadx-mcp-server
 uv --version
 ```
 
@@ -48,7 +48,7 @@ Use absolute paths.
       "command": "/path/to/uv",
       "args": [
         "--directory",
-        "/absolute/path/to/jadx-ai-mcp/jadx-mcp-server",
+        "/absolute/path/to/jadx-mcp-server",
         "run",
         "jadx_mcp_server.py"
       ]
