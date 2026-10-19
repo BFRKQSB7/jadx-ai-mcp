@@ -12,9 +12,27 @@ This page documents the MCP tools currently exposed by `jadx_mcp_server.py`.
 
 ---
 
+## Kotlin metadata slimming
+
+Every tool that returns decompiled source strips the Kotlin compiler annotations before
+answering — `@Metadata(d1 = {...}, d2 = {...})` on Kotlin classes and `@DebugMetadata(...)`
+on coroutines classes. They are compiler IR rather than code, and on a Kotlin APK they are
+routinely 25–50% of a dump, so leaving them in burns an agent's context window.
+
+- Each of those tools takes `slim: bool = True`; pass `slim=False` for the raw dump.
+- A stripped annotation is replaced in place by `/*[slimmed: Kotlin metadata]*/`.
+- **The line count never changes**, so `with_line_numbers=True` and
+  `add_comment(..., line=N)` still address exactly the lines JADX has.
+- Package-qualified forms (`@kotlin.Metadata(...)`,
+  `@kotlin.coroutines.jvm.internal.DebugMetadata(...)`) are covered too.
+- Real annotations (`@Override`, `@Inject`, …) and `/* JADX INFO: ... */` notes are kept.
+- Java dumps are unaffected: nothing matches, so the source is returned untouched.
+
+---
+
 ## Class Analysis
 
-### `fetch_current_class()`
+### `fetch_current_class(slim: bool = True)`
 Fetches the currently selected class from JADX-GUI.
 
 ### `get_selected_text()`
@@ -23,7 +41,7 @@ Returns selected text from the current editor pane.
 ### `get_all_classes(offset: int = 0, count: int = 0)`
 Returns paginated list of all classes. `count=0` means no explicit limit.
 
-### `get_class_source(class_name: str, with_line_numbers: bool = False)`
+### `get_class_source(class_name: str, with_line_numbers: bool = False, slim: bool = True)`
 Gets full Java source for a class. With `with_line_numbers=True` every line is prefixed
 with its 1-based number, which is what `add_comment` expects in its `line` argument.
 
@@ -39,10 +57,10 @@ Gets smali for a class.
 ### `get_main_application_classes_names()`
 Returns class names under the app package from `AndroidManifest.xml`.
 
-### `get_main_application_classes_code(offset: int = 0, count: int = 0)`
+### `get_main_application_classes_code(offset: int = 0, count: int = 0, slim: bool = True)`
 Returns paginated decompiled code for classes under the app package.
 
-### `get_main_activity_class()`
+### `get_main_activity_class(slim: bool = True)`
 Returns main launcher activity class and source.
 
 ### `get_package_tree()`
@@ -58,8 +76,8 @@ Clears decompilation cache and resets counters.
 
 ## Search
 
-### `get_method_by_name(class_name: str, method_name: str, method_signature: str = None)`
-Fetches one method body from a specific class.
+### `get_method_by_name(class_name: str, method_name: str, method_signature: str | None = None, slim: bool = True)`
+Fetches one method body from a specific class. Kotlin metadata is stripped unless `slim=False`.
 
 ### `search_method_by_name(method_name: str)`
 Searches method names globally.

@@ -361,13 +361,17 @@ The following MCP tools are available:
 https://github.com/zinja-coder/jadx-ai-mcp/releases
 
 # 1. 
-unzip jadx-ai-mcp-<version>.zip
+unzip jadx-mcp-server-<version>.zip
 
 ├jadx-mcp-server/
-  ├── jadx_mcp.py
+  ├── jadx_mcp_server.py
   ├── requirements.txt
   ├── README.md
   ├── LICENSE
+  ├── src/
+  ├── static/
+  ├── examples/
+  └── test.sh
 
 ├jadx-ai-mcp-<version>.jar
 
