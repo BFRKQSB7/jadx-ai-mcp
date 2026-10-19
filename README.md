@@ -370,6 +370,7 @@ unzip jadx-mcp-server-<version>.zip
   ├── LICENSE
   ├── src/
   ├── static/
+  ├── examples/
   └── test.sh
 
 ├jadx-ai-mcp-<version>.jar

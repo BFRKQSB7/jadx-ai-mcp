@@ -2,7 +2,7 @@
 
 Starting from v6.0.0 all notable changes to JADX-AI-MCP will be documented here.
 
-## 2026-10 (unreleased)
+## v6.5.0 (2026-10)
 
 MCP server (`jadx-mcp-server`):
 
